@@ -1,5 +1,5 @@
 import { useState, useRef, ReactElement } from "react";
-import "./Range-slider.css";
+import "./styles.css";
 
 type TrackBarProps = {
   url: string;
