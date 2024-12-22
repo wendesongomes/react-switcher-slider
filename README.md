@@ -35,7 +35,6 @@ Import the component into your project:
 ```tsx
 import React from "react";
 import { TrackBar } from "react-switcher-slider";
-import "react-switcher-slider/dist/Range-slider.css";
 ```
 
 ### Available Properties
@@ -109,47 +108,6 @@ const App = () => {
 };
 
 export default App;
-```
-
----
-
-## Custom Styling
-
-Make sure to include the `Range-slider.css` file for basic styles. You can customize the styles using the `customStyle` property to fit your project needs.
-
-### Example `Range-slider.css`
-
-```css
-.trackBar {
-  position: relative;
-  width: 100%;
-  height: 10px;
-  background: #ccc;
-}
-
-.track {
-  position: absolute;
-  height: 100%;
-  background: #007bff;
-}
-
-.button {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #007bff;
-  cursor: pointer;
-}
-
-.viewValueContainer {
-  position: absolute;
-  top: -25px;
-  background: white;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
 ```
 
 ---
