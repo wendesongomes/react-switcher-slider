@@ -1,6 +1,6 @@
 {
   "name": "react-switcher-slider",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "description": "A customizable React range slider component.",
   "main": "dist/trackbar.umd.js",
   "module": "dist/trackbar.es.js",
@@ -39,6 +39,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
     "vite-plugin-dts": "^4.4.0"
   }
 }
