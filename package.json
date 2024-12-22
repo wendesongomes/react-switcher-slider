@@ -1,6 +1,6 @@
 {
   "name": "react-switcher-slider",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A customizable React range slider component.",
   "main": "dist/trackbar.umd.js",
   "module": "dist/trackbar.es.js",
