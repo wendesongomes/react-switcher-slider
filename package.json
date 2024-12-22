@@ -1,0 +1,42 @@
+{
+  "name": "react-switcher-slider",
+  "version": "0.1.0",
+  "description": "A customizable React range slider component.",
+  "main": "dist/trackbar.umd.js",
+  "module": "dist/trackbar.es.js",
+  "types": "dist/types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wendesongomes/react-slider-switcher"
+  },
+  "keywords": [
+    "react",
+    "slider",
+    "range",
+    "component",
+    "typescript"
+  ],
+  "author": "Wendeson Gomes <wendeson.gomes@live.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wendesongomes/react-switcher-slider/issues"
+  },
+  "homepage": "https://github.com/wendesongomes/react-switcher-slider#readme",
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:types": "tsc --emitDeclarationOnly",
+    "build": "vite build && npm run build:types"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite-plugin-dts": "^4.4.0"
+  }
+}
