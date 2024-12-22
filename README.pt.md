@@ -1,7 +1,3 @@
-# Biblioteca react-switcher-slider
-
-## Descrição
-
 A biblioteca react-switcher-slider fornece um componente React para criar barras de controle interativas que permitem ajustar intervalos de áudio. É altamente personalizável e fácil de integrar em projetos React.
 
 Diferencial: Ao contrário de sliders tradicionais, esta biblioteca não exige definição fixa de botões "início" e "fim". O botão que estiver na posição inicial será o início, e, se ultrapassar o outro, seus papéis serão alternados dinamicamente.
