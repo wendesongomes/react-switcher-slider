@@ -1,15 +1,12 @@
-import { useState, useRef, ReactElement } from "react";
-import "./styles.css";
+import { useRef, KeyboardEvent } from "react";
 
 type TrackBarProps = {
-  url: string;
-  setValueA: (start: number) => void;
-  setValueB: (end: number) => void;
-  trackValueA?: number;
-  trackValueB?: number;
-  handleOnLoading?: (loading: boolean) => void;
-  skeleton?: ReactElement;
-  showValueInTracking?: boolean;
+  max: number;
+  min: number;
+  start?: number;
+  end?: number;
+  onChange: (start: number, end: number) => void;
+  disabled?: boolean;
   customStyle?: {
     trackBar?: React.CSSProperties;
     track?: React.CSSProperties;
@@ -19,155 +16,307 @@ type TrackBarProps = {
 };
 
 export const TrackBar = (props: TrackBarProps) => {
-  const [progressButtonOne, setProgressButtonOne] = useState(0);
-  const [progressButtonTwo, setProgressButtonTwo] = useState(1);
-  const [audioDuration, setAudioDuration] = useState<number>(0);
+  let progressButtonOne =
+    props.start !== undefined
+      ? (props.start - props.min) / (props.max - props.min)
+      : 0;
 
-  const audioRef = useRef<HTMLAudioElement>(null);
+  let progressButtonTwo =
+    props.end !== undefined
+      ? (props.end - props.min) / (props.max - props.min)
+      : 1;
+
+  progressButtonOne = Math.max(Math.min(1, progressButtonOne), 0);
+  progressButtonTwo = Math.max(Math.min(1, progressButtonTwo), 0);
+
   const trackRef = useRef<HTMLDivElement | null>(null);
 
-  const getDuration = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
-    setAudioDuration(e.currentTarget.duration);
+  const handleMove = (event: MouseEvent | TouchEvent, type: "ONE" | "TWO") => {
+    if (props.disabled) return;
 
-    if (props.trackValueA) {
-      const startPosition = props.trackValueA / e.currentTarget.duration;
-      setProgressButtonOne(startPosition);
-    } else {
-      props.setValueA(0);
-    }
+    const clientX =
+      event instanceof TouchEvent ? event.touches[0].clientX : event.clientX;
 
-    if (props.trackValueB) {
-      const endPosition = props.trackValueB / e.currentTarget.duration;
-      setProgressButtonTwo(endPosition);
-    } else {
-      props.setValueB(e.currentTarget.duration);
-    }
-
-    if (props.handleOnLoading) {
-      props.handleOnLoading(false);
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent, type: "ONE" | "TWO") => {
-    if (trackRef.current && audioDuration) {
+    if (trackRef.current) {
       const trackRect = trackRef.current.getBoundingClientRect();
       const newProgress = Math.min(
-        Math.max(0, e.clientX - trackRect.left),
+        Math.max(0, clientX - trackRect.left),
         trackRect.width
       );
-      let updatedButtonOne = progressButtonOne;
-      let updatedButtonTwo = progressButtonTwo;
 
       if (type === "ONE") {
-        updatedButtonOne = newProgress / trackRect.width;
-        setProgressButtonOne(updatedButtonOne);
+        progressButtonOne = newProgress / trackRect.width;
       } else if (type === "TWO") {
-        updatedButtonTwo = newProgress / trackRect.width;
-        setProgressButtonTwo(updatedButtonTwo);
+        progressButtonTwo = newProgress / trackRect.width;
       }
 
       const newStart =
-        Math.min(updatedButtonOne, updatedButtonTwo) * audioDuration;
-
+        Math.min(progressButtonOne, progressButtonTwo) *
+          (props.max - props.min) +
+        props.min;
       const newEnd =
-        Math.max(updatedButtonOne, updatedButtonTwo) * audioDuration;
+        Math.max(progressButtonOne, progressButtonTwo) *
+          (props.max - props.min) +
+        props.min;
 
-      props.setValueA(newStart);
-      props.setValueB(newEnd);
+      props.onChange(
+        parseFloat(newStart.toFixed(2)),
+        parseFloat(newEnd.toFixed(2))
+      );
     }
   };
 
-  const startDragging = (type: "ONE" | "TWO") => {
-    const mouseMoveHandler = (e: MouseEvent) => handleMouseMove(e, type);
+  const startDragging = (type: "ONE" | "TWO", isTouch: boolean = false) => {
+    if (props.disabled) return;
+
+    const moveHandler = (e: MouseEvent | TouchEvent) => handleMove(e, type);
+
     const stopDragging = () => {
-      window.removeEventListener("mousemove", mouseMoveHandler);
-      window.removeEventListener("mouseup", stopDragging);
+      window.removeEventListener(
+        isTouch ? "touchmove" : "mousemove",
+        moveHandler
+      );
+      window.removeEventListener(
+        isTouch ? "touchend" : "mouseup",
+        stopDragging
+      );
     };
 
-    window.addEventListener("mousemove", mouseMoveHandler);
-    window.addEventListener("mouseup", stopDragging);
+    window.addEventListener(isTouch ? "touchmove" : "mousemove", moveHandler);
+    window.addEventListener(isTouch ? "touchend" : "mouseup", stopDragging);
+  };
+
+  const moveKeyboard = (
+    event: KeyboardEvent<HTMLDivElement>,
+    type: "ONE" | "TWO"
+  ) => {
+    if (props.disabled) return;
+
+    const step = 0.01;
+    const largeStep = 0.1;
+
+    if (trackRef.current && props.max) {
+      const trackRect = trackRef.current.getBoundingClientRect();
+
+      const calculateNewProgress = (key: string, currentProgress: number) => {
+        switch (key) {
+          case "Home":
+            return 0;
+          case "End":
+            return 1;
+          case "PageUp":
+            return Math.min(currentProgress + largeStep, 1);
+          case "PageDown":
+            return Math.max(currentProgress - largeStep, 0);
+          case "ArrowRight":
+          case "ArrowUp":
+            return Math.min(currentProgress + step, 1);
+          case "ArrowLeft":
+          case "ArrowDown":
+            return Math.max(currentProgress - step, 0);
+          default:
+            return currentProgress;
+        }
+      };
+
+      if (type === "ONE") {
+        progressButtonOne = calculateNewProgress(event.key, progressButtonOne);
+      } else if (type === "TWO") {
+        progressButtonTwo = calculateNewProgress(event.key, progressButtonTwo);
+      }
+
+      const newStartProgress =
+        Math.min(progressButtonOne, progressButtonTwo) * trackRect.width;
+      const newEndProgress =
+        Math.max(progressButtonOne, progressButtonTwo) * trackRect.width;
+
+      const newStart =
+        (newStartProgress / trackRect.width) * (props.max - props.min) +
+        props.min;
+      const newEnd =
+        (newEndProgress / trackRect.width) * (props.max - props.min) +
+        props.min;
+
+      props.onChange(
+        parseFloat(newStart.toFixed(2)),
+        parseFloat(newEnd.toFixed(2))
+      );
+    }
   };
 
   const spanWidth = Math.abs(progressButtonTwo - progressButtonOne) * 100;
 
-  const startTime = progressButtonOne * audioDuration;
-  const endTime = progressButtonTwo * audioDuration;
+  const handleClickOnTrack = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (props.disabled) return;
 
-  const formatAudioDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
+    if (trackRef.current) {
+      const trackRect = trackRef.current.getBoundingClientRect();
+      const clickPosition = Math.min(
+        Math.max(0, event.clientX - trackRect.left),
+        trackRect.width
+      );
+      const clickProgress = clickPosition / trackRect.width;
 
-    const formattedMinutes = minutes.toString().padStart(2, "0");
-    const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
+      const distanceToButtonOne = Math.abs(clickProgress - progressButtonOne);
+      const distanceToButtonTwo = Math.abs(clickProgress - progressButtonTwo);
 
-    return `${formattedMinutes}:${formattedSeconds}`;
+      if (distanceToButtonOne < distanceToButtonTwo) {
+        progressButtonOne = clickProgress;
+        const newStart = clickProgress * (props.max - props.min) + props.min;
+        const newEnd = progressButtonTwo * (props.max - props.min) + props.min;
+
+        props.onChange(
+          Math.min(
+            parseFloat(newStart.toFixed(2)),
+            parseFloat(newEnd.toFixed(2))
+          ),
+          Math.max(
+            parseFloat(newStart.toFixed(2)),
+            parseFloat(newEnd.toFixed(2))
+          )
+        );
+      } else {
+        progressButtonTwo = clickProgress;
+
+        const newStart =
+          progressButtonOne * (props.max - props.min) + props.min;
+        const newEnd = clickProgress * (props.max - props.min) + props.min;
+        props.onChange(
+          Math.min(
+            parseFloat(newStart.toFixed(2)),
+            parseFloat(newEnd.toFixed(2))
+          ),
+          Math.max(
+            parseFloat(newStart.toFixed(2)),
+            parseFloat(newEnd.toFixed(2))
+          )
+        );
+      }
+    }
   };
 
+  const valueButtonOne =
+    progressButtonOne * (props.max - props.min) + props.min;
+  const valueButtonTwo =
+    progressButtonTwo * (props.max - props.min) + props.min;
+
   return (
-    <>
-      <audio
-        src={props.url}
-        ref={audioRef}
-        onCanPlayThrough={(e) => {
-          getDuration(e);
+    <div
+      ref={trackRef}
+      style={{
+        display: "block",
+        width: "100%",
+        height: "10px",
+        borderRadius: "50px",
+        backgroundColor: props.disabled ? "#d3d3d3" : "#d9d9d9",
+        position: "relative",
+        cursor: props.disabled ? "default" : "pointer",
+        userSelect: "none",
+        msUserSelect: "none",
+        MozUserSelect: "none",
+        WebkitUserSelect: "none",
+        ...props.customStyle?.trackBar,
+      }}
+      onClick={handleClickOnTrack}
+    >
+      <span
+        style={{
+          left: `${Math.min(progressButtonOne, progressButtonTwo) * 100}%`,
+          width: `${spanWidth}%`,
+          display: "block",
+          position: "absolute",
+          height: "10px",
+          backgroundColor: "#3b95ff",
+          filter: props.disabled ? "brightness(50%)" : "none",
+          userSelect: "none",
+          msUserSelect: "none",
+          MozUserSelect: "none",
+          WebkitUserSelect: "none",
+          ...props.customStyle?.track,
         }}
-        onLoadStart={() => props.handleOnLoading && props.handleOnLoading(true)}
       />
 
-      {audioDuration ? (
-        <div
-          ref={trackRef}
-          className="trackBar"
-          style={props.customStyle?.trackBar}
-        >
-          <span
-            className="track"
-            style={{
-              left: `${Math.min(progressButtonOne, progressButtonTwo) * 100}%`,
-              width: `${spanWidth}%`,
-              ...props.customStyle?.track,
-            }}
-          ></span>
+      <div
+        tabIndex={0}
+        onKeyDown={(e) => moveKeyboard(e, "ONE")}
+        onMouseDown={() => startDragging("ONE")}
+        onTouchStart={() => startDragging("ONE", true)}
+        aria-orientation="horizontal"
+        dir="ltr"
+        aria-valuemin={props.min}
+        aria-valuemax={props.max}
+        aria-valuenow={parseFloat(valueButtonOne.toFixed(2))}
+        role="slider"
+        style={{
+          left: `${
+            ((valueButtonOne - props.min) / (props.max - props.min)) * 100
+          }%`,
+          display: "block",
+          width: "20px",
+          height: "20px",
+          border: "none",
+          position: "absolute",
+          borderRadius: "50px",
+          transform: "translate(-50%, -22.5%)",
+          backgroundColor: "#3b95ff",
+          cursor: props.disabled ? "default" : "pointer",
+          filter: props.disabled ? "brightness(50%)" : "none",
+          zIndex: 2,
+          userSelect: "none",
+          msUserSelect: "none",
+          MozUserSelect: "none",
+          WebkitUserSelect: "none",
+          ...props.customStyle?.button,
+        }}
+      >
+        <input
+          type="text"
+          hidden
+          value={parseFloat(valueButtonOne.toFixed(2))}
+          readOnly
+        />
+      </div>
 
-          <button
-            onMouseDown={() => startDragging("ONE")}
-            style={{
-              left: `${progressButtonOne * 100}%`,
-              ...props.customStyle?.button,
-            }}
-            className="button"
-          >
-            {props.showValueInTracking && (
-              <div
-                className="viewValueContainer"
-                style={props.customStyle?.viewValueContainer}
-              >
-                <p>{formatAudioDuration(startTime)}</p>
-              </div>
-            )}
-          </button>
-
-          <button
-            onMouseDown={() => startDragging("TWO")}
-            className="button"
-            style={{
-              left: `${progressButtonTwo * 100}%`,
-              ...props.customStyle?.button,
-            }}
-          >
-            {props.showValueInTracking && (
-              <div
-                className="viewValueContainer"
-                style={props.customStyle?.viewValueContainer}
-              >
-                <p>{formatAudioDuration(endTime)}</p>
-              </div>
-            )}
-          </button>
-        </div>
-      ) : (
-        props.skeleton
-      )}
-    </>
+      <div
+        tabIndex={0}
+        onKeyDown={(e) => moveKeyboard(e, "TWO")}
+        onMouseDown={() => startDragging("TWO")}
+        onTouchStart={() => startDragging("TWO", true)}
+        aria-orientation="horizontal"
+        dir="ltr"
+        aria-valuemin={props.min}
+        aria-valuemax={props.max}
+        aria-valuenow={parseFloat(valueButtonTwo.toFixed(2))}
+        role="slider"
+        style={{
+          left: `${
+            ((valueButtonTwo - props.min) / (props.max - props.min)) * 100
+          }%`,
+          display: "block",
+          width: "20px",
+          height: "20px",
+          border: "none",
+          position: "absolute",
+          borderRadius: "50px",
+          transform: "translate(-50%, -22.5%)",
+          backgroundColor: "#3b95ff",
+          cursor: props.disabled ? "default" : "pointer",
+          filter: props.disabled ? "brightness(50%)" : "none",
+          zIndex: 2,
+          userSelect: "none",
+          msUserSelect: "none",
+          MozUserSelect: "none",
+          WebkitUserSelect: "none",
+          ...props.customStyle?.button,
+        }}
+      >
+        <input
+          type="text"
+          hidden
+          value={parseFloat(valueButtonTwo.toFixed(2))}
+          readOnly
+        />
+      </div>
+    </div>
   );
 };
