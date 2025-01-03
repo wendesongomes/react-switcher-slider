@@ -71,7 +71,7 @@ const App = () => {
   const [end, setEnd] = useState(0);
 
   return (
-    <div>
+    <>
       <h1>TrackBar Demo</h1>
       <TrackBar
         max={100}
@@ -97,7 +97,7 @@ const App = () => {
       <p>
         Selected interval: {start.toFixed(2)} - {end.toFixed(2)}
       </p>
-    </div>
+    </>
   );
 };
 
