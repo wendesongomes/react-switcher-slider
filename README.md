@@ -1,10 +1,8 @@
-
 ![2024-12-21-23-27-40-_online-video-cutter com_-_1_](https://github.com/user-attachments/assets/d2b14251-5d24-4ecb-b22d-25cd7d20a720)
 
+# react-switcher-slider
 
-he react-switcher-slider library provides a React component to create interactive control bars for adjusting audio intervals. It is highly customizable and easy to integrate into React projects.
-
-Unique Feature: Unlike traditional sliders, this library doesn't require defining fixed start or end buttons. The button positioned at the beginning becomes the start, and if moved past the other button, their roles switch dynamically.
+The react-switcher-slider library provides a React component to create customizable track bars for adjusting intervals. This slider component is highly interactive and dynamically switches the roles of start and end buttons when they cross each other.
 
 ---
 
@@ -22,8 +20,6 @@ or
 yarn add react-switcher-slider
 ```
 
-Ensure you import the custom CSS file `Range-slider.css` into your project for styling.
-
 ---
 
 ## How to Use
@@ -39,17 +35,15 @@ import { TrackBar } from "react-switcher-slider";
 
 ### Available Properties
 
-| Property              | Type                         | Description                                                         | Required |
-| --------------------- | ---------------------------- | ------------------------------------------------------------------- | -------- |
-| `url`                 | `string`                     | URL of the audio file.                                              | Yes      |
-| `setValueA`           | `(start: number) => void`    | Function to set the start value of the interval.                    | Yes      |
-| `setValueB`           | `(end: number) => void`      | Function to set the end value of the interval.                      | Yes      |
-| `trackValueA`         | `number`                     | Initial value of the interval (in seconds).                         | No       |
-| `trackValueB`         | `number`                     | Final value of the interval (in seconds).                           | No       |
-| `handleOnLoading`     | `(loading: boolean) => void` | Callback function triggered during audio loading.                   | No       |
-| `skeleton`            | `ReactElement`               | Element displayed while the audio is loading.                       | No       |
-| `showValueInTracking` | `boolean`                    | Displays current interval values when interacting with the buttons. | No       |
-| `customStyle`         | `object`                     | Custom styles for different component parts (detailed below).       | No       |
+| Property      | Type                                  | Description                                                  | Required |
+| ------------- | ------------------------------------- | ------------------------------------------------------------ | -------- |
+| `max`         | `number`                              | Maximum value for the interval.                              | Yes      |
+| `min`         | `number`                              | Minimum value for the interval.                              | Yes      |
+| `start`       | `number`                              | The starting value of the interval (optional).               | No       |
+| `end`         | `number`                              | The ending value of the interval (optional).                 | No       |
+| `onChange`    | `(start: number,end: number) => void` | Callback function triggered when the interval changes.       | Yes      |
+| `disabled`    | `boolean`                             | Disables the track bar when true.                            | Yes      |
+| `customStyle` | `object`                              | Custom styles for various parts of the component (optional). | No       |
 
 ### `customStyle` Structure
 
@@ -78,30 +72,28 @@ const App = () => {
     <div>
       <h1>TrackBar Demo</h1>
       <TrackBar
-        url="/videoplayback.m4a"
-        setValueA={setStart}
-        setValueB={setEnd}
-        trackValueA={100}
-        trackValueB={20}
-        skeleton={<p>Loading.....</p>}
-        showValueInTracking
+        max={100}
+        min={0}
+        start={start}
+        end={end}
+        onChange={(newStart, newEnd) => {
+          setStart(newStart);
+          setEnd(newEnd);
+        }}
         customStyle={{
           button: {
-            background: "black",
+            backgroundColor: "blue",
           },
           track: {
-            background: "black",
+            backgroundColor: "gray",
           },
           trackBar: {
-            background: "blue",
-          },
-          viewValueContainer: {
-            background: "red",
+            backgroundColor: "lightblue",
           },
         }}
       />
       <p>
-        Selected interval: {start.toFixed(2)}s - {end.toFixed(2)}s
+        Selected interval: {start.toFixed(2)} - {end.toFixed(2)}
       </p>
     </div>
   );
@@ -112,11 +104,12 @@ export default App;
 
 ---
 
-## Tips
+## Key Features
 
-- Ensure the audio file is accessible at the path provided in the `url` property.
-- Use the `skeleton` property to enhance the user experience while the audio loads.
-- Customize styles to align with your project's visual identity.
+- Dynamic Role Switching: The start and end buttons automatically switch positions if they cross each other, creating a smooth user experience.
+- Keyboard and Mouse Interaction: Supports both mouse and keyboard inputs, with arrow keys, home, and end keys for precise adjustments.
+- Customizable Styles: You can easily customize the track bar and buttons using the customStyle prop.
+- Accessibility: The component is fully accessible, with proper ARIA attributes and keyboard navigation.
 
 ---
 
