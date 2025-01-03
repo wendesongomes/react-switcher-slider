@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import dts from "vite-plugin-dts";
-import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 
 export default defineConfig({
   plugins: [
@@ -11,7 +10,6 @@ export default defineConfig({
       insertTypesEntry: true,
       outDir: "dist/types",
     }),
-    cssInjectedByJsPlugin(),
   ],
   build: {
     lib: {
