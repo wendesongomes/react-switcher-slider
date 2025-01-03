@@ -1,4 +1,6 @@
-![2024-12-21-23-27-40-_online-video-cutter com_-_1_](https://github.com/user-attachments/assets/d2b14251-5d24-4ecb-b22d-25cd7d20a720)
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/cd553e83-3a03-42db-9eb3-61700d4a74e0" alt="Descrição da Imagem">
+</div>
 
 # react-switcher-slider
 
